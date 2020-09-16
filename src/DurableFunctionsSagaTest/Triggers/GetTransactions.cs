@@ -18,7 +18,7 @@ namespace DurableFunctionsSagaTest.Triggers
     {
         [FunctionName(nameof(GetTransactions))]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "transactions")] HttpRequest req,
             [DurableClient] IDurableEntityClient client,
             ILogger log)
         {

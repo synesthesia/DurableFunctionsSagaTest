@@ -17,7 +17,7 @@ namespace DurableFunctionsSagaTest.Triggers
     {
         [FunctionName(nameof(InvoiceExportTrigger))]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function,  "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function,  "post", Route = "triggers/xrmexportinvoice")] HttpRequest req,
             [DurableClient] IDurableEntityClient client,
             ILogger log)
         {
