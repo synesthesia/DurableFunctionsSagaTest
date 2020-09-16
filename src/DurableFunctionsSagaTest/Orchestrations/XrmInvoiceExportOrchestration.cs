@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
 using DurableFunctionsSagaTest.Entities;
 using Microsoft.Azure.WebJobs;
@@ -9,7 +7,7 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 
 namespace DurableFunctionsSagaTest.Orchestrations
 {
-    public static class XrmInvoiceExportOrchestration
+    public class XrmInvoiceExportOrchestration
     {
         [FunctionName(nameof(XrmInvoiceExportOrchestration))]
         public static async Task RunOrchestrator(
@@ -18,11 +16,11 @@ namespace DurableFunctionsSagaTest.Orchestrations
             var transactionId = context.GetInput<string>();
 
             // get proxy to durable transaction state
-            var entityId = new EntityId(nameof(TransactionState), transactionId);
-            var proxy = context.CreateEntityProxy<ITransactionState>(entityId);
+            var entityId = new EntityId(nameof(Transaction), transactionId);
+            var proxy = context.CreateEntityProxy<ITransaction>(entityId);
 
             var currentState = await proxy.GetState();
-            if (currentState != "XrmInvoiceExportStarted")
+            if (currentState != TransactionState.XrmInvoiceExportStarted)
             {
                 throw new InvalidOperationException("Wrong state");
             }

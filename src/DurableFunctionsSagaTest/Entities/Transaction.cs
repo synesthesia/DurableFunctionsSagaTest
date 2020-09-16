@@ -7,22 +7,25 @@ using Newtonsoft.Json;
 namespace DurableFunctionsSagaTest.Entities
 {
 
-    public interface ITransactionState
+    public interface ITransaction
     {
         void StartXrmInvoiceExport(Guid xrmInvoiceId);
-        Task<string> GetState();
+        Task<TransactionState> GetState();
     }
 
     [JsonObject(MemberSerialization.OptIn)]
-    public class TransactionState : ITransactionState
+    public class Transaction : ITransaction
     {
-        public TransactionState()
+        public Transaction()
         {
-            State = "Undefined";
+            State = TransactionState.Undefined;
         }
 
         [JsonProperty("state")]
-        public string State { get; set; }  // possibly refactor to enum?
+        public TransactionState State { get; set; }  
+
+        [JsonProperty("start")]
+        public DateTime Start { get; set; }
 
         // probably going to refactor this into an object to hold (eventually) all of the Xrm Invoice value
         // ReSharper disable once StringLiteralTypo
@@ -31,20 +34,27 @@ namespace DurableFunctionsSagaTest.Entities
 
         // possibly will add a similar object to hold the Xero invoice information
 
-        [FunctionName(nameof(TransactionState))]
+        [FunctionName(nameof(Transaction))]
         public static Task Run([EntityTrigger] IDurableEntityContext ctx)
-            => ctx.DispatchAsync<TransactionState>();
+            => ctx.DispatchAsync<Transaction>();
 
         public void StartXrmInvoiceExport(Guid xrmInvoiceId)
         {
             XrmInvoiceId = xrmInvoiceId;
-            State = "XrmInvoiceExportStarted";
-
+            Start = DateTime.UtcNow;
+            State = TransactionState.XrmInvoiceExportStarted;
         }
 
-        public async Task<string> GetState()
+        public async Task<TransactionState> GetState()
         {
             return State;
         }
+    }
+
+    public enum TransactionState
+    {
+        Undefined,
+        XrmInvoiceExportStarted
+
     }
 }
