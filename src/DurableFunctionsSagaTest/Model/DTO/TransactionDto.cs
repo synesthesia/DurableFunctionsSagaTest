@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Newtonsoft.Json;
 
-namespace DurableFunctionsSagaTest.DTO
+namespace DurableFunctionsSagaTest.Model.DTO
 {
     public class TransactionDto
     {

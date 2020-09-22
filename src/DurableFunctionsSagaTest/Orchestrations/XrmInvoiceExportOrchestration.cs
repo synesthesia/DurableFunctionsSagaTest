@@ -1,6 +1,10 @@
 using System;
 using System.Threading.Tasks;
-using DurableFunctionsSagaTest.Entities;
+using DurableFunctionsSagaTest.Activities;
+using DurableFunctionsSagaTest.DurableEntities;
+using DurableFunctionsSagaTest.Model.Activity;
+using DurableFunctionsSagaTest.Model.Domain;
+using DurableFunctionsSagaTest.Model.Orchestration;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 
@@ -13,8 +17,9 @@ namespace DurableFunctionsSagaTest.Orchestrations
         public static async Task RunOrchestrator(
             [OrchestrationTrigger] IDurableOrchestrationContext context)
         {
-            var transactionId = context.GetInput<string>();
+            var parameters = context.GetInput<OrchestrationParameter<Guid>>();
 
+            var transactionId = parameters.TransactionId;
             // get proxy to durable transaction state
             var entityId = new EntityId(nameof(Transaction), transactionId);
             var proxy = context.CreateEntityProxy<ITransaction>(entityId);
@@ -25,20 +30,27 @@ namespace DurableFunctionsSagaTest.Orchestrations
                 throw new InvalidOperationException("Wrong state");
             }
 
-           // add some calls her eto pull the Xrm invoice Id from the entity
 
-           // then call an activity function to read the full invoice and it's lines from XRM
-           // and update into state
-           // and change the state CurrentState
+            // call an activity function to read the full invoice and it's lines from XRM
+            // and change the state 
 
-           // then call activity function(s) to build the Xero invoice and any othe rrecords
-           // keep updating state as you go along
+            var xrmInvoiceId = parameters.Item;
+            var readInvoiceResult =
+                await context.CallActivityAsync<ActivityResult<Invoice>>(nameof(ReadInvoiceFromXrmActivity),
+                    xrmInvoiceId);
+            proxy.UpdateState(TransactionState.XrmInvoiceRetrieved);
 
-           // then call an activity function to update status in XRM
+            // then call an activity function to read the full invoice and it's lines from XRM
+            // and change the state CurrentState
 
-           // at the end set the stat et completed
+            // then call activity function(s) to build the Xero invoice and any othe rrecords
+            // keep updating state as you go along
 
-           // and possibly return something from this.
+            // then call an activity function to update status in XRM
+
+            // at the end set the stat et completed
+
+            // and possibly return something from this.
 
 
         }

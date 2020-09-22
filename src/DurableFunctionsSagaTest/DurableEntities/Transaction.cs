@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Threading.Tasks;
+using DurableFunctionsSagaTest.Orchestrations;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Newtonsoft.Json;
 
-namespace DurableFunctionsSagaTest.Entities
+namespace DurableFunctionsSagaTest.DurableEntities
 {
 
     public interface ITransaction
     {
         void StartXrmInvoiceExport(Guid xrmInvoiceId);
         Task<TransactionState> GetState();
+        void UpdateState(TransactionState newState);
     }
 
     [JsonObject(MemberSerialization.OptIn)]
@@ -42,6 +44,7 @@ namespace DurableFunctionsSagaTest.Entities
         {
             XrmInvoiceId = xrmInvoiceId;
             Start = DateTime.UtcNow;
+            Entity.Current.StartNewOrchestration(nameof(XrmInvoiceExportOrchestration), xrmInvoiceId);
             State = TransactionState.XrmInvoiceExportStarted;
         }
 
@@ -49,12 +52,17 @@ namespace DurableFunctionsSagaTest.Entities
         {
             return State;
         }
+
+        public void  UpdateState(TransactionState newState)
+        {
+            State = newState;
+        }
     }
 
     public enum TransactionState
     {
         Undefined,
-        XrmInvoiceExportStarted
-
+        XrmInvoiceExportStarted,
+        XrmInvoiceRetrieved
     }
 }
