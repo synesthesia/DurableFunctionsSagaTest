@@ -33,6 +33,7 @@ namespace DurableFunctionsSagaTest.Orchestrations
 
             // call an activity function to read the full invoice and it's lines from XRM
             // and change the state 
+            // note naivety of not setting timeouts or handling errors
 
             var xrmInvoiceId = parameters.Item;
             var readInvoiceResult =
@@ -40,15 +41,27 @@ namespace DurableFunctionsSagaTest.Orchestrations
                     xrmInvoiceId);
             proxy.UpdateState(TransactionState.XrmInvoiceRetrieved);
 
-            // then call an activity function to read the full invoice and it's lines from XRM
-            // and change the state CurrentState
 
-            // then call activity function(s) to build the Xero invoice and any othe rrecords
-            // keep updating state as you go along
+            // for our naive simulation let's assume that all we need to do now is create the invoice in the destination
+            // i.e. no steps needed to check that the customer exists in that system etc
+            // so call an activity function to read the full invoice and it's lines from XRM
+            // and change the state 
+
+            // again note naivety of not setting timeouts or handling errors
+            var createFinanceInvoiceResult =
+                await context.CallActivityAsync<ActivityResult<Invoice>>(nameof(CreateInvoiceInFinanceActivity),
+                    readInvoiceResult.Item);
+            proxy.UpdateState(TransactionState.FinanceInvoiceCreated);
+
 
             // then call an activity function to update status in XRM
 
-            // at the end set the stat et completed
+            var finalInvoiceResult =
+                await context.CallActivityAsync<ActivityResult<Invoice>>(nameof(UpdateXrmInvoiceStatusActivity),
+                    createFinanceInvoiceResult.Item);
+
+            // at the end set the state completed
+            proxy.UpdateState(TransactionState.InvoiceExported);
 
             // and possibly return something from this.
 

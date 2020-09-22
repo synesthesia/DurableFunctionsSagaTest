@@ -63,6 +63,8 @@ namespace DurableFunctionsSagaTest.DurableEntities
     {
         Undefined,
         XrmInvoiceExportStarted,
-        XrmInvoiceRetrieved
+        XrmInvoiceRetrieved,
+        FinanceInvoiceCreated,
+        InvoiceExported
     }
 }

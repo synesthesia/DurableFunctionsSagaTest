@@ -11,5 +11,6 @@ namespace DurableFunctionsSagaTest.Model.Domain
     {
         public Guid XrmInvoiceId { get; set; }
         public decimal NetTotal { get; set; }
+        public Guid FinanceInvoiceId { get; set; }
     }
 }
